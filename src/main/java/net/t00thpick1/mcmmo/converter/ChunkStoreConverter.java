@@ -211,7 +211,7 @@ public class ChunkStoreConverter {
                     if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                         continue;
                     }
-                    chunk.convertCoordinatesToVersionOne();
+                    chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
                     writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
                 }
             }
@@ -244,7 +244,7 @@ public class ChunkStoreConverter {
                 if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                     continue;
                 }
-                chunk.convertCoordinatesToVersionOne();
+                chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
                 writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
             }
 
@@ -276,7 +276,7 @@ public class ChunkStoreConverter {
                 if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                     continue;
                 }
-                chunk.convertCoordinatesToVersionOne();
+                chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
                 writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
             }
 
@@ -304,7 +304,7 @@ public class ChunkStoreConverter {
                     newChunkZ--;
                 }
                 if (newChunkX >> 5 == regionX && newChunkZ >> 5 == regionZ) {
-                    chunk.convertCoordinatesToVersionOne();
+                    chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
                     writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
                 }
             }

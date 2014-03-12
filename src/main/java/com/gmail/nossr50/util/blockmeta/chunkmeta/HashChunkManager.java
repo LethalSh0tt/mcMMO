@@ -14,8 +14,6 @@ import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.Entity;
-
 import com.gmail.nossr50.mcMMO;
 
 public class HashChunkManager implements ChunkManager {
@@ -133,44 +131,12 @@ public class HashChunkManager implements ChunkManager {
     }
 
     @Override
-    public synchronized void loadChunklet(int cx, int cy, int cz, World world) {
-        loadChunk(cx, cz, world, null);
-    }
-
-    @Override
-    public synchronized void unloadChunklet(int cx, int cy, int cz, World world) {
-        unloadChunk(cx, cz, world);
-    }
-
-    @Override
-    public synchronized void loadChunk(int cx, int cz, World world, Entity[] entities) {
+    public synchronized void loadChunk(int cx, int cz, World world) {
         if (world == null || store.containsKey(world.getName() + "," + cx + "," + cz)) {
             return;
         }
 
-        UUID key = world.getUID();
-
-        if (!oldData.containsKey(key)) {
-            // TODO: Eventually use FORMAT version instead of boolean, but right now that doesn't matter
-            File file = new File(new File(world.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
-            if (!file.isFile()) {
-                mcMMO.p.getLogger().severe("World " + world.getName() + " is using a mcMMO ChunkStore format with known exploits.");
-                mcMMO.p.getLogger().severe("It is recommended that you convert to the new file format for them immediately.");
-                mcMMO.p.getLogger().severe("Instructions to do so can be found at www.placeholderURL.com"); // TODO: Real link
-                oldData.put(key, true);
-            } else {
-                oldData.put(key, false);
-            }
-        }
-        else if (oldData.get(key)) {
-            // Old files are off by one
-            if (cx < 0) {
-                cx++;
-            }
-            if (cz < 0) {
-                cz++;
-            }
-        }
+        String storeKey = world.getName() + "," + cx + "," + cz;
 
         ChunkStore chunkStore = null;
 
@@ -183,7 +149,7 @@ public class HashChunkManager implements ChunkManager {
             return;
         }
 
-        store.put(world.getName() + "," + cx + "," + cz, chunkStore);
+        store.put(storeKey, chunkStore);
     }
 
     @Override
@@ -310,19 +276,12 @@ public class HashChunkManager implements ChunkManager {
             return false;
         }
 
-        int cx = x >> 4;
-        int cz = z >> 4;
-        String key = world.getName() + "," + cx + "," + cz;
+        ChunkStore check = getChunkStore(world, x, z, false);
 
-        if (!store.containsKey(key)) {
-            loadChunk(cx, cz, world, null);
-        }
-
-        if (!store.containsKey(key)) {
+        if (check == null) {
             return false;
         }
 
-        ChunkStore check = store.get(key);
         int ix = Math.abs(x) % 16;
         int iz = Math.abs(z) % 16;
 
@@ -353,26 +312,55 @@ public class HashChunkManager implements ChunkManager {
             return;
         }
 
-        int cx = x >> 4;
-        int cz = z >> 4;
+        ChunkStore cStore = getChunkStore(world, x, z, true);
 
         int ix = Math.abs(x) % 16;
         int iz = Math.abs(z) % 16;
 
+        cStore.setTrue(ix, y, iz);
+    }
+
+    private ChunkStore getChunkStore(World world, int x, int z, boolean create) {
+        int cx = x >> 4;
+        int cz = z >> 4;
+
+        UUID uuid = world.getUID();
+
+        if (!oldData.containsKey(uuid)) {
+            // TODO: Eventually use FORMAT version instead of boolean, but right now that doesn't matter
+            File file = new File(new File(world.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
+            if (!file.isFile()) {
+                mcMMO.p.getLogger().severe("World " + world.getName() + " is using a mcMMO ChunkStore format with known exploits.");
+                mcMMO.p.getLogger().severe("It is recommended that you convert to the new file format for them immediately.");
+                mcMMO.p.getLogger().severe("Instructions to do so can be found at www.placeholderURL.com"); // TODO: Real link
+                oldData.put(uuid, true);
+            } else {
+                oldData.put(uuid, false);
+            }
+        }
+        if (oldData.get(uuid)) {
+            // Old files are off by one
+            if (cx < 0 && x % 16 != 0) {
+                cx++;
+            }
+            if (cz < 0 && z % 16 != 0) {
+                cz++;
+            }
+        }
+
         String key = world.getName() + "," + cx + "," + cz;
 
         if (!store.containsKey(key)) {
-            loadChunk(cx, cz, world, null);
+            loadChunk(cx, cz, world);
         }
 
         ChunkStore cStore = store.get(key);
 
-        if (cStore == null) {
+        if (cStore == null && create) {
             cStore = ChunkStoreFactory.getChunkStore(world, cx, cz);
             store.put(key, cStore);
         }
-
-        cStore.setTrue(ix, y, iz);
+        return cStore;
     }
 
     @Override
@@ -399,22 +387,13 @@ public class HashChunkManager implements ChunkManager {
             return;
         }
 
-        int cx = x >> 4;
-        int cz = z >> 4;
+        ChunkStore cStore = getChunkStore(world, x, z, false);
 
         int ix = Math.abs(x) % 16;
         int iz = Math.abs(z) % 16;
 
-        String key = world.getName() + "," + cx + "," + cz;
-
-        if (!store.containsKey(key)) {
-            loadChunk(cx, cz, world, null);
-        }
-
-        ChunkStore cStore = store.get(key);
-
         if (cStore == null) {
-            return; // No need to make a store for something we will be setting to false
+            return;
         }
 
         cStore.setFalse(ix, y, iz);

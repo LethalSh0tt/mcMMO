@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.Entity;
 
 public interface ChunkManager {
     public void closeAll();
@@ -17,33 +16,13 @@ public interface ChunkManager {
     public void closeChunkStore(World world, int x, int z);
 
     /**
-     * Loads a specific chunklet
-     *
-     * @param cx Chunklet X coordinate that needs to be loaded
-     * @param cy Chunklet Y coordinate that needs to be loaded
-     * @param cz Chunklet Z coordinate that needs to be loaded
-     * @param world World that the chunklet needs to be loaded in
-     */
-    public void loadChunklet(int cx, int cy, int cz, World world);
-
-    /**
-     * Unload a specific chunklet
-     *
-     * @param cx Chunklet X coordinate that needs to be unloaded
-     * @param cy Chunklet Y coordinate that needs to be unloaded
-     * @param cz Chunklet Z coordinate that needs to be unloaded
-     * @param world World that the chunklet needs to be unloaded from
-     */
-    public void unloadChunklet(int cx, int cy, int cz, World world);
-
-    /**
      * Load a given Chunk's Chunklet data
      *
      * @param cx Chunk X coordinate that is to be loaded
      * @param cz Chunk Z coordinate that is to be loaded
      * @param world World that the Chunk is in
      */
-    public void loadChunk(int cx, int cz, World world, Entity[] entities);
+    public void loadChunk(int cx, int cz, World world);
 
     /**
      * Unload a given Chunk's Chunklet data

@@ -76,13 +76,9 @@ public class PrimitiveChunkStore implements ChunkStore {
         return true;
     }
 
-    public void convertCoordinatesToVersionOne() {
-        if (cz < 0) {
-            cz--;
-        }
-        if (cx < 0) {
-            cx--;
-        }
+    public void convertCoordinatesToVersionOne(int newX, int newZ) {
+        cx = newX;
+        cz = newZ;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
