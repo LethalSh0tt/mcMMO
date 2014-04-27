@@ -30,7 +30,7 @@ public class ChunkStoreConverter {
     public static int threadCount = 5;
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length == 0) {
-            System.out.println("[mcMMO] Need folder path");
+            System.out.println("[mcMMO] Folder path invalid: " + args[0]);
             return;
         }
         directory = new File(args[0]);
@@ -162,6 +162,7 @@ public class ChunkStoreConverter {
         objectStream.writeObject(1);
         objectStream.flush();
         objectStream.close();
+        System.out.println("[mcMMO] Conversion done!");
     }
 
     private int[] parseFile(File file) {
