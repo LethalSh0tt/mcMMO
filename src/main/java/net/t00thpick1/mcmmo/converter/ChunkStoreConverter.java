@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -22,10 +20,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkStore;
-import com.gmail.nossr50.util.blockmeta.chunkmeta.McMMOSimpleRegionFile;
-import com.gmail.nossr50.util.blockmeta.chunkmeta.PrimitiveChunkStore;
-
 import net.t00thpick1.mcmmo.com.wolvereness.overmapped.lib.MultiProcessor;
 
 @SuppressWarnings("javadoc")
@@ -33,74 +27,75 @@ public class ChunkStoreConverter {
     public static File directory;
     public static int threadCount = 5;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static int convertChunkStoreFlatFiles(int nThreads) throws IOException, InterruptedException {
+    	threadCount = nThreads;
+    	return StartConversion();
+    }
+    
+    public static int convertChunkStoreFlatFiles() throws IOException, InterruptedException {
+    	return StartConversion();
+    }
+    
+    /***
+     * Iterates through worldsToConvert.yml and looks for entries, if any exist they are converted to the new format
+     * and finally worldsToConvert.yml is destroyed if no failures were detected
+     * @return Returns the number of worlds successfully converted
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private static int StartConversion() throws IOException, InterruptedException {
         String workingPath = System.getProperty("user.dir") + File.separator;
         File toConvertFile = new File(workingPath, "worldsToConvert.yml");
+        
+        int conversionCount = 0;
+        int failureCount = 0;
 
         if (!toConvertFile.exists()) {
             System.out.println("[mcMMO] worldsToConvert.yml was not found!");
-            return;
+            return conversionCount;
         }
 
         InputStream inputStream = new FileInputStream(toConvertFile);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
-
         String worldName;
 
         while ((worldName = bufferedReader.readLine()) != null) {
             directory = new File(workingPath, worldName + File.separator + "mcmmo_regions");
-
+            
             if (!directory.isDirectory()) {
                 System.out.println("[mcMMO] Folder path invalid: " + directory.toString());
-                return;
+                System.out.println("[mcMMO] Invalid mcmmo_regions directory for world: '"+ worldName 
+                		+ "' make sure the directory in worldsToConvert.yml is a valid system path");
+                System.out.println("[mcMMO] Conversion Process failed for: "+worldName);
+                failureCount++;
+                continue;
             }
-            if (args.length > 0) {
-                threadCount = Integer.valueOf(args[0]);
-                System.out.println("[mcMMO] Using " + threadCount + " threads.");
-            }
-            new ChunkStoreConverter();
+            
+            System.out.println("[mcMMO] Upgrading ChunkStore format for world '"+worldName+"' using "+threadCount+" threads");
+            processChunkStoreDirectory();
+            
+            conversionCount++;
         }
 
         bufferedReader.close();
+        
+        if(failureCount == 0)
+        	toConvertFile.delete(); //Don't need worldsToConvert.yml anymore
+        else
+        	System.out.println("[mcMMO] Failed to convert "+ failureCount 
+        			+ " worlds, please edit or delete worldsToConvert.yml and try again");
+        
+        return conversionCount;
     }
-
-    class Wrapper implements Runnable {
-        private final AtomicInteger reads;
-        private final int regionX;
-        private final int regionZ;
-        private final File file;
-        private final Map<List<Integer>, Wrapper> wrappers;
-
-        Wrapper(int x, int z, Map<List<Integer>, Wrapper> wrappers) {
-            this.regionX = x;
-            this.regionZ = z;
-            this.wrappers = wrappers;
-
-            this.file = new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
-            this.reads = new AtomicInteger((regionX < 0) && (regionZ < 0) ? 4 : 2);
-        }
-
-        void decrementUses() {
-            if (reads.decrementAndGet() == 0 && file.exists()) {
-                if (!file.delete()) {
-                    System.err.println("[mcMMO] Failed to delete `" + file + "'");
-                }
-            }
-        }
-
-        public void run() {
-            try {
-                writeNewRegionFile(regionX, regionZ, wrappers);
-            }
-            catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
-        }
-    }
-
-    public ChunkStoreConverter() throws IOException {
+    
+    /***
+     *  Runs through each ChunkStore file in directory and copies the data into a new file,
+     *  the old file is then destroyed.
+     * @throws IOException
+     */
+    private static void processChunkStoreDirectory() throws IOException {
         File[] files = directory.listFiles(new ChunkStoreFilter());
-        final Map<List<Integer>, Wrapper> toConvert = new LinkedHashMap<List<Integer>, Wrapper>();
+        final Map<List<Integer>, ChunkStoreWrapper> toConvert = new LinkedHashMap<List<Integer>, ChunkStoreWrapper>();
         for (File file : files) {
             final int[] coords = parseFile(file);
             if (coords == null) {
@@ -119,6 +114,7 @@ public class ChunkStoreConverter {
                 toConvert.put(Arrays.asList(x - 1, z - 1), null);
             }
         }
+        
         Object[] sorted = toConvert.keySet().toArray();
         Arrays.sort(sorted, new Comparator<Object>() {
             public int compare(List<Integer> o1, List<Integer> o2) {
@@ -139,7 +135,7 @@ public class ChunkStoreConverter {
             List<Integer> item = (List<Integer>) object;
             int x = item.get(0);
             int z = item.get(1);
-            toConvert.put(item, new Wrapper(x, z, toConvert));
+            toConvert.put(item, new ChunkStoreWrapper(directory, x, z, toConvert));
         }
 
         MultiProcessor processor = MultiProcessor.newMultiProcessor(threadCount, new ThreadFactory() {
@@ -150,10 +146,10 @@ public class ChunkStoreConverter {
             }
         });
 
-        List<Future<Wrapper>> tasks = new ArrayList<Future<Wrapper>>();
-        for (final Wrapper wrapper : toConvert.values()) {
-            final Callable<Wrapper> callable = new Callable<Wrapper>() {
-                public Wrapper call() throws Exception {
+        List<Future<ChunkStoreWrapper>> tasks = new ArrayList<Future<ChunkStoreWrapper>>();
+        for (final ChunkStoreWrapper wrapper : toConvert.values()) {
+            final Callable<ChunkStoreWrapper> callable = new Callable<ChunkStoreWrapper>() {
+                public ChunkStoreWrapper call() throws Exception {
                     wrapper.run();
                     return wrapper;
                 }
@@ -165,7 +161,7 @@ public class ChunkStoreConverter {
             try {
                 while (true) {
                     try {
-                        Wrapper wrapper = tasks.get(i).get();
+                        ChunkStoreWrapper wrapper = tasks.get(i).get();
                         System.out.println("[mcMMO] " + (i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
                         break;
                     }
@@ -190,7 +186,7 @@ public class ChunkStoreConverter {
         System.out.println("[mcMMO] Conversion done for world: " + directory.getParentFile().getName());
     }
 
-    private int[] parseFile(File file) {
+    private static int[] parseFile(File file) {
         // Parse coordinates
         String coordString = file.getName().substring(6);
         coordString = coordString.substring(0, coordString.length() - 5);
@@ -204,185 +200,5 @@ public class ChunkStoreConverter {
         }
 
         return new int[]{rx, rz};
-    }
-
-    public void writeNewRegionFile(int regionX, int regionZ, Map<List<Integer>, Wrapper> wrappers) throws IOException {
-        McMMOSimpleRegionFile newFile = new McMMOSimpleRegionFile(new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.v1.mcm"), regionX, regionZ);
-        File bulkRegion = new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
-        File leftRegion = new File(directory, "mcmmo_" + (regionX + 1) + "_" + regionZ + "_.mcm");
-        File lowerRegion = new File(directory, "mcmmo_" + regionX + "_" + (regionZ + 1) + "_.mcm");
-        File lowerLeftRegion = new File(directory, "mcmmo_" + (regionX + 1) + "_" + (regionZ + 1) + "_.mcm");
-        if (bulkRegion.isFile()) {
-            // Grab matching region
-            int oldRegionX = regionX;
-            int oldRegionZ = regionZ;
-            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(bulkRegion, oldRegionX, oldRegionZ, true);
-
-            for (int chunkX = oldRegionX << 5; chunkX < (oldRegionX << 5) + 32; chunkX++) {
-                for (int chunkZ = oldRegionZ << 5; chunkZ < (oldRegionZ << 5) + 32; chunkZ++) {
-                    PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
-                    if (chunk == null) {
-                        continue;
-                    }
-                    int newChunkX = chunkX;
-                    // Decrement all those below 0
-                    if (chunkX < 0) {
-                        newChunkX--;
-                    }
-                    int newChunkZ = chunkZ;
-                    // Decrement all those below 0
-                    if (chunkZ < 0) {
-                        newChunkZ--;
-                    }
-                    if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
-                        continue;
-                    }
-                    chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
-                    writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
-                }
-            }
-
-            original.close();
-            wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
-        }
-        if (leftRegion.isFile() && regionX < 0) {
-            // Grab region to the left
-            int oldRegionX = regionX + 1;
-            int oldRegionZ = regionZ;
-            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(leftRegion, oldRegionX, oldRegionZ, true);
-
-            int chunkX = (oldRegionX << 5);
-            for (int chunkZ = oldRegionZ << 5; chunkZ < (oldRegionZ << 5) + 32; chunkZ++) {
-                PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
-                if (chunk == null) {
-                    continue;
-                }
-                int newChunkX = chunkX;
-                // Actual region coord is negative, so we want all 0 and below to decrement
-                if (chunkX <= 0) {
-                    newChunkX--;
-                }
-                int newChunkZ = chunkZ;
-                // Decrement all those below 0
-                if (chunkZ < 0) {
-                    newChunkZ--;
-                }
-                if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
-                    continue;
-                }
-                chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
-                writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
-            }
-
-            original.close();
-            wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
-        }
-        if (lowerRegion.isFile() && regionZ < 0) {
-            // Grab region below
-            int oldRegionX = regionX;
-            int oldRegionZ = regionZ + 1;
-            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerRegion, oldRegionX, oldRegionZ, true);
-
-            int chunkZ = oldRegionZ << 5;
-            for (int chunkX = oldRegionX << 5; chunkX < (oldRegionX << 5) + 32; chunkX++) {
-                PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
-                if (chunk == null) {
-                    continue;
-                }
-                int newChunkX = chunkX;
-                // Decrement all those below 0
-                if (chunkX < 0) {
-                    newChunkX--;
-                }
-                int newChunkZ = chunkZ;
-                // Actual region coord is negative, so we want all 0 and below to decrement
-                if (chunkZ <= 0) {
-                    newChunkZ--;
-                }
-                if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
-                    continue;
-                }
-                chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
-                writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
-            }
-
-            original.close();
-            wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
-        }
-        if (lowerLeftRegion.isFile() && regionX < 0 && regionZ < 0) {
-            // Grab region to the left and below
-            int oldRegionX = regionX + 1;
-            int oldRegionZ = regionZ + 1;
-            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerLeftRegion, oldRegionX, oldRegionZ, true);
-
-            int chunkZ = (oldRegionZ << 5);
-            int chunkX = (oldRegionX << 5);
-            PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
-            if (chunk != null) {
-                int newChunkX = chunkX;
-                // Actual region coord is negative, so we want all 0 and below to decrement
-                if (chunkX <= 0) {
-                    newChunkX--;
-                }
-                int newChunkZ = chunkZ;
-                // Actual region coord is negative, so we want all 0 and below to decrement
-                if (chunkZ <= 0) {
-                    newChunkZ--;
-                }
-                if (newChunkX >> 5 == regionX && newChunkZ >> 5 == regionZ) {
-                    chunk.convertCoordinatesToVersionOne(newChunkX, newChunkZ);
-                    writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
-                }
-            }
-
-            original.close();
-            wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
-        }
-        newFile.close();
-    }
-
-    private void writeChunkStore(McMMOSimpleRegionFile file, int x, int z, ChunkStore data) {
-        try {
-            ObjectOutputStream objectStream = new ObjectOutputStream(file.getOutputStream(x, z));
-            objectStream.writeObject(data);
-            objectStream.flush();
-            objectStream.close();
-            data.setDirty(false);
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Unable to write chunk meta data for " + x + ", " + z, e);
-        }
-    }
-
-    private PrimitiveChunkStore getChunkStore(McMMOSimpleRegionFile rf, int x, int z) throws IOException {
-        InputStream in = rf.getInputStream(x, z);
-        if (in == null) {
-            return null;
-        }
-        ObjectInputStream objectStream = new ObjectInputStream(in);
-        try {
-            Object o = objectStream.readObject();
-            if (o instanceof PrimitiveChunkStore) {
-                return (PrimitiveChunkStore) o;
-            }
-
-            throw new RuntimeException("Wrong class type read for chunk meta data for " + x + ", " + z);
-        }
-        catch (IOException e) {
-            return null;
-        }
-        catch (ClassNotFoundException e) {
-            return null;
-        }
-        finally {
-            objectStream.close();
-        }
-    }
-
-    class ChunkStoreFilter implements FilenameFilter {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".mcm") && !name.endsWith(".v1.mcm"); // Grab unconverted files only
-        }
     }
 }

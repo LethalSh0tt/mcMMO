@@ -12,9 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import net.t00thpick1.mcmmo.converter.ChunkStoreConverter;
+
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.entity.Player;
 
 import com.gmail.nossr50.mcMMO;
 
@@ -136,7 +140,7 @@ public class HashChunkManager implements ChunkManager {
     public void checkAllWorlds() {
         mcMMO.p.debug("Checking all worlds if the old mcMMO ChunkStore format is present.");
 
-        List<String> worldList = new ArrayList();
+        List<String> worldList = new ArrayList<String>();
         for (World worlds : mcMMO.p.getServer().getWorlds()) {
             File file = new File(new File(worlds.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
             UUID key = worlds.getUID();
@@ -464,4 +468,28 @@ public class HashChunkManager implements ChunkManager {
 
     @Override
     public synchronized void cleanUp() {}
+
+	@Override
+	public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
+		//The main thread will be locked down during the conversion process so they won't be able to rejoin
+		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
+			p.kickPlayer("[mcMMO] Update in progress.");
+		}
+		
+		saveAll();
+		unloadAll();
+		return ChunkStoreConverter.convertChunkStoreFlatFiles(threadCount);
+	}
+
+	@Override
+	public int convertChunkFormat() throws IOException, InterruptedException {
+		//The main thread will be locked down during the conversion process so they won't be able to rejoin
+		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
+			p.kickPlayer("[mcMMO] Update in progress.");
+		}
+		
+		saveAll();
+		unloadAll();
+		return ChunkStoreConverter.convertChunkStoreFlatFiles();
+	}
 }

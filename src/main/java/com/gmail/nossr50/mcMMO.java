@@ -53,6 +53,8 @@ import com.gmail.nossr50.util.ModManager;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkManager;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkManagerFactory;
+import com.gmail.nossr50.util.blockmeta.chunkmeta.HashChunkManager;
+import com.gmail.nossr50.util.blockmeta.chunkmeta.NullChunkManager;
 import com.gmail.nossr50.util.commands.CommandRegistrationManager;
 import com.gmail.nossr50.util.experience.FormulaManager;
 import com.gmail.nossr50.util.player.UserManager;
@@ -170,8 +172,12 @@ public class mcMMO extends JavaPlugin {
             CommandRegistrationManager.registerCommands();
 
             MetricsManager.setup();
-
-            placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
+            
+            if (HiddenConfig.getInstance().getChunkletsEnabled()) {
+            	placeStore = new HashChunkManager();
+            } else {
+            	placeStore = new NullChunkManager();
+            }
 
             checkForUpdates();
 

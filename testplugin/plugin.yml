@@ -1,7 +1,0 @@
-name: TestPlugin
-main: net.t00thpick1.TestPlugin
-version: 1.0
-depend: [mcMMO]
-commands:
-  test:
-    description: It does stuff   /test set SEED    /test check SEED

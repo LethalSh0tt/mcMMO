@@ -103,4 +103,17 @@ public class NullChunkManager implements ChunkManager {
     
 	@Override
 	public void loadChunk(int cx, int cz, World world) {}
+
+	@Override
+	public void checkAllWorlds() {}
+
+	@Override
+	public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
+		return 0;
+	}
+
+	@Override
+	public int convertChunkFormat() throws IOException, InterruptedException {
+		return 0;
+	}
 }

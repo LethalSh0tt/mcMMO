@@ -14,6 +14,23 @@ public interface ChunkManager {
     public void writeChunkStore(World world, int x, int z, ChunkStore data);
 
     public void closeChunkStore(World world, int x, int z);
+    
+    /***
+     * Starts the conversion process for ChunkStore with n threads
+     * @param threads Number of threads to use for the conversion process
+     * @return Returns the number of worlds successfully converted
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public int convertChunkFormat(int threadCount) throws IOException, InterruptedException;
+    
+    /***
+     * Starts the conversion process for ChunkStore with the default number of threads
+     * @return Returns the number of worlds successfully converted
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public int convertChunkFormat() throws IOException, InterruptedException;
 
     /**
      * Load a given Chunk's Chunklet data
