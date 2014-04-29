@@ -52,7 +52,6 @@ import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.ModManager;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkManager;
-import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkManagerFactory;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.HashChunkManager;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.NullChunkManager;
 import com.gmail.nossr50.util.commands.CommandRegistrationManager;

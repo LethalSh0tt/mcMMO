@@ -11,12 +11,12 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.util.StringUtil;
 
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.commands.chunkstore.ConvertChunkStoreCommand;
 import com.gmail.nossr50.commands.database.ConvertDatabaseCommand;
 import com.gmail.nossr50.commands.experience.ConvertExperienceCommand;
 import com.gmail.nossr50.database.DatabaseManagerFactory;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
-
 import com.google.common.collect.ImmutableList;
 
 public class McconvertCommand implements TabExecutor {
@@ -26,6 +26,7 @@ public class McconvertCommand implements TabExecutor {
 
     private CommandExecutor databaseConvertCommand = new ConvertDatabaseCommand();
     private CommandExecutor experienceConvertCommand = new ConvertExperienceCommand();
+    private CommandExecutor convertChunkStoreCommand = new ConvertChunkStoreCommand();
 
     static {
         ArrayList<String> formulaTypes = new ArrayList<String>();
@@ -64,7 +65,9 @@ public class McconvertCommand implements TabExecutor {
                 else if (args[0].equalsIgnoreCase("experience") || args[0].equalsIgnoreCase("xp") || args[1].equalsIgnoreCase("exp")) {
                     return experienceConvertCommand.onCommand(sender, command, label, args);
                 }
-
+                else if (args[0].equalsIgnoreCase("chunkstore")) {
+                	return convertChunkStoreCommand.onCommand(sender, command, label, args);
+                }
                 return false;
             default:
                 return false;
@@ -84,6 +87,7 @@ public class McconvertCommand implements TabExecutor {
                 if (args[0].equalsIgnoreCase("experience") || args[0].equalsIgnoreCase("xp") || args[0].equalsIgnoreCase("exp")) {
                     return StringUtil.copyPartialMatches(args[0], FORMULA_TYPES, new ArrayList<String>(FORMULA_TYPES.size()));
                 }
+                //TODO: Add ChunkStore command here?
 
                 return ImmutableList.of();
             default:

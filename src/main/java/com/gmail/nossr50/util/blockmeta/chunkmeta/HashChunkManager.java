@@ -406,7 +406,7 @@ public class HashChunkManager implements ChunkManager {
         ChunkStore cStore = store.get(key);
 
         if (cStore == null && create) {
-            cStore = ChunkStoreFactory.getChunkStore(world, cx, cz);
+            cStore = new PrimitiveChunkStore(world, x, z);
             store.put(key, cStore);
         }
         return cStore;
