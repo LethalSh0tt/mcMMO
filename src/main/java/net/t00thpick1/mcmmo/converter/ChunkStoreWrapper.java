@@ -26,7 +26,7 @@ class ChunkStoreWrapper implements Runnable {
         this.regionX = x;
         this.regionZ = z;
         this.wrappers = wrappers;
-        
+
         this.directory = directory;
         this.file = new File(this.directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
         this.reads = new AtomicInteger((regionX < 0) && (regionZ < 0) ? 4 : 2);
@@ -48,7 +48,7 @@ class ChunkStoreWrapper implements Runnable {
             throw new RuntimeException(t);
         }
     }
-    
+
     private void writeChunkStore(McMMOSimpleRegionFile file, int x, int z, ChunkStore data) {
         try {
             ObjectOutputStream objectStream = new ObjectOutputStream(file.getOutputStream(x, z));
@@ -86,7 +86,7 @@ class ChunkStoreWrapper implements Runnable {
             objectStream.close();
         }
     }
-    
+
     private void writeNewRegionFile(int regionX, int regionZ, Map<List<Integer>, ChunkStoreWrapper> wrappers) throws IOException {
         McMMOSimpleRegionFile newFile = new McMMOSimpleRegionFile(new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.v1.mcm"), regionX, regionZ);
         File bulkRegion = new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
@@ -98,7 +98,7 @@ class ChunkStoreWrapper implements Runnable {
             int oldRegionX = regionX;
             int oldRegionZ = regionZ;
             McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(bulkRegion, oldRegionX, oldRegionZ, true);
-            
+
             for (int chunkX = oldRegionX << 5; chunkX < (oldRegionX << 5) + 32; chunkX++) {
                 for (int chunkZ = oldRegionZ << 5; chunkZ < (oldRegionZ << 5) + 32; chunkZ++) {
                     PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);

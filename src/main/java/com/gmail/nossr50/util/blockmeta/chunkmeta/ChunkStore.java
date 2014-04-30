@@ -8,35 +8,35 @@ import java.io.Serializable;
 public interface ChunkStore extends Serializable {
     /**
      * Checks the chunk's save state
-     *
+     * 
      * @return true if the has been modified since it was last saved
      */
     public boolean isDirty();
 
     /**
      * Checks the chunk's save state
-     *
+     * 
      * @param dirty the save state of the current chunk
      */
     public void setDirty(boolean dirty);
 
     /**
      * Checks the chunk's x coordinate
-     *
+     * 
      * @return the chunk's x coordinate.
      */
     public int getChunkX();
 
     /**
      * Checks the chunk's z coordinate
-     *
+     * 
      * @return the chunk's z coordinate.
      */
     public int getChunkZ();
 
     /**
      * Checks the value at the given coordinates
-     *
+     * 
      * @param x x coordinate in current chunklet
      * @param y y coordinate in current chunklet
      * @param z z coordinate in current chunklet
@@ -46,7 +46,7 @@ public interface ChunkStore extends Serializable {
 
     /**
      * Set the value to true at the given coordinates
-     *
+     * 
      * @param x x coordinate in current chunklet
      * @param y y coordinate in current chunklet
      * @param z z coordinate in current chunklet
@@ -55,7 +55,7 @@ public interface ChunkStore extends Serializable {
 
     /**
      * Set the value to false at the given coordinates
-     *
+     * 
      * @param x x coordinate in current chunklet
      * @param y y coordinate in current chunklet
      * @param z z coordinate in current chunklet

@@ -21,18 +21,17 @@ public class NullChunkManager implements ChunkManager {
 
     @Override
     public void closeChunkStore(World world, int x, int z) {}
-    
-    /* Old code I assume -nossr50
-    @Override
-    public void loadChunklet(int cx, int cy, int cz, World world) {}
 
-    @Override
-    public void unloadChunklet(int cx, int cy, int cz, World world) {}
+    /*
+     * Old code I assume -nossr50
+     * @Override
+     * public void loadChunklet(int cx, int cy, int cz, World world) {}
+     * @Override
+     * public void unloadChunklet(int cx, int cy, int cz, World world) {}
+     * @Override
+     * public void loadChunk(int cx, int cz, World world, Entity[] entities) {}
+     */
 
-    @Override
-    public void loadChunk(int cx, int cz, World world, Entity[] entities) {}
-	*/
-    
     @Override
     public void unloadChunk(int cx, int cz, World world) {}
 
@@ -100,20 +99,20 @@ public class NullChunkManager implements ChunkManager {
 
     @Override
     public void cleanUp() {}
-    
-	@Override
-	public void loadChunk(int cx, int cz, World world) {}
 
-	@Override
-	public void checkAllWorlds() {}
+    @Override
+    public void loadChunk(int cx, int cz, World world) {}
 
-	@Override
-	public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
-		return 0;
-	}
+    @Override
+    public void checkAllWorlds() {}
 
-	@Override
-	public int convertChunkFormat() throws IOException, InterruptedException {
-		return 0;
-	}
+    @Override
+    public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
+        return 0;
+    }
+
+    @Override
+    public int convertChunkFormat() throws IOException, InterruptedException {
+        return 0;
+    }
 }

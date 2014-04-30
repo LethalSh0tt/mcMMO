@@ -14,18 +14,20 @@ public interface ChunkManager {
     public void writeChunkStore(World world, int x, int z, ChunkStore data);
 
     public void closeChunkStore(World world, int x, int z);
-    
+
     /***
      * Starts the conversion process for ChunkStore with n threads
+     * 
      * @param threads Number of threads to use for the conversion process
      * @return Returns the number of worlds successfully converted
      * @throws IOException
      * @throws InterruptedException
      */
     public int convertChunkFormat(int threadCount) throws IOException, InterruptedException;
-    
+
     /***
      * Starts the conversion process for ChunkStore with the default number of threads
+     * 
      * @return Returns the number of worlds successfully converted
      * @throws IOException
      * @throws InterruptedException
@@ -34,7 +36,7 @@ public interface ChunkManager {
 
     /**
      * Load a given Chunk's Chunklet data
-     *
+     * 
      * @param cx Chunk X coordinate that is to be loaded
      * @param cz Chunk Z coordinate that is to be loaded
      * @param world World that the Chunk is in
@@ -43,7 +45,7 @@ public interface ChunkManager {
 
     /**
      * Unload a given Chunk's Chunklet data
-     *
+     * 
      * @param cx Chunk X coordinate that is to be unloaded
      * @param cz Chunk Z coordinate that is to be unloaded
      * @param world World that the Chunk is in
@@ -52,7 +54,7 @@ public interface ChunkManager {
 
     /**
      * Saves a given Chunk's Chunklet data
-     *
+     * 
      * @param cx Chunk X coordinate that is to be saved
      * @param cz Chunk Z coordinate that is to be saved
      * @param world World that the Chunk is in
@@ -63,7 +65,7 @@ public interface ChunkManager {
 
     /**
      * Informs the ChunkletManager a chunk is loaded
-     *
+     * 
      * @param cx Chunk X coordinate that is loaded
      * @param cz Chunk Z coordinate that is loaded
      * @param world World that the chunk was loaded in
@@ -72,7 +74,7 @@ public interface ChunkManager {
 
     /**
      * Informs the ChunkletManager a chunk is unloaded
-     *
+     * 
      * @param cx Chunk X coordinate that is unloaded
      * @param cz Chunk Z coordinate that is unloaded
      * @param world World that the chunk was unloaded in
@@ -81,21 +83,21 @@ public interface ChunkManager {
 
     /**
      * Save all ChunkletStores related to the given world
-     *
+     * 
      * @param world World to save
      */
     public void saveWorld(World world);
 
     /**
      * Unload all ChunkletStores from memory related to the given world after saving them
-     *
+     * 
      * @param world World to unload
      */
     public void unloadWorld(World world);
 
     /**
      * Load all ChunkletStores from all loaded chunks from this world into memory
-     *
+     * 
      * @param world World to load
      */
     public void loadWorld(World world);
@@ -114,7 +116,7 @@ public interface ChunkManager {
 
     /**
      * Check to see if a given location is set to true
-     *
+     * 
      * @param x X coordinate to check
      * @param y Y coordinate to check
      * @param z Z coordinate to check
@@ -125,7 +127,7 @@ public interface ChunkManager {
 
     /**
      * Check to see if a given block location is set to true
-     *
+     * 
      * @param block Block location to check
      * @return true if the given block location is set to true, false if otherwise
      */
@@ -133,7 +135,7 @@ public interface ChunkManager {
 
     /**
      * Check to see if a given BlockState location is set to true
-     *
+     * 
      * @param blockState BlockState to check
      * @return true if the given BlockState location is set to true, false if otherwise
      */
@@ -141,7 +143,7 @@ public interface ChunkManager {
 
     /**
      * Set a given location to true, should create stores as necessary if the location does not exist
-     *
+     * 
      * @param x X coordinate to set
      * @param y Y coordinate to set
      * @param z Z coordinate to set
@@ -151,21 +153,21 @@ public interface ChunkManager {
 
     /**
      * Set a given block location to true, should create stores as necessary if the location does not exist
-     *
+     * 
      * @param block Block location to set
      */
     public void setTrue(Block block);
 
     /**
      * Set a given BlockState location to true, should create stores as necessary if the location does not exist
-     *
+     * 
      * @param blockState BlockState location to set
      */
     public void setTrue(BlockState blockState);
 
     /**
      * Set a given location to false, should not create stores if one does not exist for the given location
-     *
+     * 
      * @param x X coordinate to set
      * @param y Y coordinate to set
      * @param z Z coordinate to set
@@ -175,14 +177,14 @@ public interface ChunkManager {
 
     /**
      * Set a given block location to false, should not create stores if one does not exist for the given location
-     *
+     * 
      * @param block Block location to set
      */
     public void setFalse(Block block);
 
     /**
      * Set a given BlockState location to false, should not create stores if one does not exist for the given location
-     *
+     * 
      * @param blockState BlockState location to set
      */
     public void setFalse(BlockState blockState);

@@ -62,13 +62,13 @@ public class HashChunkManager implements ChunkManager {
         catch (IOException e) {
             // Assume the format changed
             return null;
-            //throw new RuntimeException("Unable to process chunk meta data for " + x + ", " + z, e);
+            // throw new RuntimeException("Unable to process chunk meta data for " + x + ", " + z, e);
         }
         catch (ClassNotFoundException e) {
             // Assume the format changed
-            //System.out.println("[SpoutPlugin] is Unable to find serialized class for " + x + ", " + z + ", " + e.getMessage());
+            // System.out.println("[SpoutPlugin] is Unable to find serialized class for " + x + ", " + z + ", " + e.getMessage());
             return null;
-            //throw new RuntimeException("Unable to find serialized class for " + x + ", " + z, e);
+            // throw new RuntimeException("Unable to find serialized class for " + x + ", " + z, e);
         }
         finally {
             objectStream.close();
@@ -126,7 +126,8 @@ public class HashChunkManager implements ChunkManager {
             File file;
             if (oldData.get(world.getUID())) {
                 file = new File(directory, "mcmmo_" + rx + "_" + rz + "_.mcm");
-            } else {
+            }
+            else {
                 file = new File(directory, "mcmmo_" + rx + "_" + rz + "_.v" + FORMAT + ".mcm");
             }
             regionFile = new McMMOSimpleRegionFile(file, rx, rz);
@@ -213,7 +214,7 @@ public class HashChunkManager implements ChunkManager {
         if (store.containsKey(world.getName() + "," + cx + "," + cz)) {
             store.remove(world.getName() + "," + cx + "," + cz);
 
-            //closeChunkStore(world, cx, cz);
+            // closeChunkStore(world, cx, cz);
         }
     }
 
@@ -469,27 +470,27 @@ public class HashChunkManager implements ChunkManager {
     @Override
     public synchronized void cleanUp() {}
 
-	@Override
-	public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
-		//The main thread will be locked down during the conversion process so they won't be able to rejoin
-		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
-			p.kickPlayer("[mcMMO] Update in progress.");
-		}
-		
-		saveAll();
-		unloadAll();
-		return ChunkStoreConverter.convertChunkStoreFlatFiles(threadCount);
-	}
+    @Override
+    public int convertChunkFormat(int threadCount) throws IOException, InterruptedException {
+        // The main thread will be locked down during the conversion process so they won't be able to rejoin
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            p.kickPlayer("[mcMMO] Update in progress.");
+        }
 
-	@Override
-	public int convertChunkFormat() throws IOException, InterruptedException {
-		//The main thread will be locked down during the conversion process so they won't be able to rejoin
-		for(Player p : Bukkit.getServer().getOnlinePlayers()) {
-			p.kickPlayer("[mcMMO] Update in progress.");
-		}
-		
-		saveAll();
-		unloadAll();
-		return ChunkStoreConverter.convertChunkStoreFlatFiles();
-	}
+        saveAll();
+        unloadAll();
+        return ChunkStoreConverter.convertChunkStoreFlatFiles(threadCount);
+    }
+
+    @Override
+    public int convertChunkFormat() throws IOException, InterruptedException {
+        // The main thread will be locked down during the conversion process so they won't be able to rejoin
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            p.kickPlayer("[mcMMO] Update in progress.");
+        }
+
+        saveAll();
+        unloadAll();
+        return ChunkStoreConverter.convertChunkStoreFlatFiles();
+    }
 }

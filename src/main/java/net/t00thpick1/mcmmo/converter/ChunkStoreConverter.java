@@ -28,17 +28,18 @@ public class ChunkStoreConverter {
     public static int threadCount = 5;
 
     public static int convertChunkStoreFlatFiles(int nThreads) throws IOException, InterruptedException {
-    	threadCount = nThreads;
-    	return StartConversion();
+        threadCount = nThreads;
+        return StartConversion();
     }
-    
+
     public static int convertChunkStoreFlatFiles() throws IOException, InterruptedException {
-    	return StartConversion();
+        return StartConversion();
     }
-    
+
     /***
      * Iterates through worldsToConvert.yml and looks for entries, if any exist they are converted to the new format
      * and finally worldsToConvert.yml is destroyed if no failures were detected
+     * 
      * @return Returns the number of worlds successfully converted
      * @throws IOException
      * @throws InterruptedException
@@ -46,7 +47,7 @@ public class ChunkStoreConverter {
     private static int StartConversion() throws IOException, InterruptedException {
         String workingPath = System.getProperty("user.dir") + File.separator;
         File toConvertFile = new File(workingPath, "worldsToConvert.yml");
-        
+
         int conversionCount = 0;
         int failureCount = 0;
 
@@ -61,36 +62,35 @@ public class ChunkStoreConverter {
 
         while ((worldName = bufferedReader.readLine()) != null) {
             directory = new File(workingPath, worldName + File.separator + "mcmmo_regions");
-            
+
             if (!directory.isDirectory()) {
                 System.out.println("[mcMMO] Folder path invalid: " + directory.toString());
-                System.out.println("[mcMMO] Invalid mcmmo_regions directory for world: '"+ worldName 
-                		+ "' make sure the directory in worldsToConvert.yml is a valid system path");
-                System.out.println("[mcMMO] Conversion Process failed for: "+worldName);
+                System.out.println("[mcMMO] Invalid mcmmo_regions directory for world: '" + worldName + "' make sure the directory in worldsToConvert.yml is a valid system path");
+                System.out.println("[mcMMO] Conversion Process failed for: " + worldName);
                 failureCount++;
                 continue;
             }
-            
-            System.out.println("[mcMMO] Upgrading ChunkStore format for world '"+worldName+"' using "+threadCount+" threads");
+
+            System.out.println("[mcMMO] Upgrading ChunkStore format for world '" + worldName + "' using " + threadCount + " threads");
             processChunkStoreDirectory();
-            
+
             conversionCount++;
         }
 
         bufferedReader.close();
-        
-        if(failureCount == 0)
-        	toConvertFile.delete(); //Don't need worldsToConvert.yml anymore
+
+        if (failureCount == 0)
+            toConvertFile.delete(); // Don't need worldsToConvert.yml anymore
         else
-        	System.out.println("[mcMMO] Failed to convert "+ failureCount 
-        			+ " worlds, please edit or delete worldsToConvert.yml and try again");
-        
+            System.out.println("[mcMMO] Failed to convert " + failureCount + " worlds, please edit or delete worldsToConvert.yml and try again");
+
         return conversionCount;
     }
-    
+
     /***
-     *  Runs through each ChunkStore file in directory and copies the data into a new file,
-     *  the old file is then destroyed.
+     * Runs through each ChunkStore file in directory and copies the data into a new file,
+     * the old file is then destroyed.
+     * 
      * @throws IOException
      */
     private static void processChunkStoreDirectory() throws IOException {
@@ -114,7 +114,7 @@ public class ChunkStoreConverter {
                 toConvert.put(Arrays.asList(x - 1, z - 1), null);
             }
         }
-        
+
         Object[] sorted = toConvert.keySet().toArray();
         Arrays.sort(sorted, new Comparator<Object>() {
             public int compare(List<Integer> o1, List<Integer> o2) {
@@ -165,8 +165,7 @@ public class ChunkStoreConverter {
                         System.out.println("[mcMMO] " + (i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
                         break;
                     }
-                    catch (InterruptedException ex) {
-                    }
+                    catch (InterruptedException ex) {}
                 }
             }
             catch (Throwable t) {
@@ -199,6 +198,6 @@ public class ChunkStoreConverter {
             return null;
         }
 
-        return new int[]{rx, rz};
+        return new int[] { rx, rz };
     }
 }
