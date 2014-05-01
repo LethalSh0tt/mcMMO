@@ -63,12 +63,12 @@ import net.shatteredlands.shatt.backup.ZipLibrary;
 
 public class mcMMO extends JavaPlugin {
     /* Managers */
-    private static ChunkManager placeStore;
+    private static ChunkManager      placeStore;
     private static RepairableManager repairableManager;
-    private static ModManager modManager;
-    private static DatabaseManager databaseManager;
-    private static FormulaManager formulaManager;
-    private static HolidayManager holidayManager;
+    private static ModManager        modManager;
+    private static DatabaseManager   databaseManager;
+    private static FormulaManager    formulaManager;
+    private static HolidayManager    holidayManager;
 
     /* File Paths */
     private static String mainDirectory;
@@ -95,21 +95,21 @@ public class mcMMO extends JavaPlugin {
     private boolean xpEventEnabled;
 
     /* Metadata Values */
-    public final static String entityMetadataKey = "mcMMO: Spawned Entity";
-    public final static String blockMetadataKey = "mcMMO: Piston Tracking";
-    public final static String furnaceMetadataKey = "mcMMO: Tracked Furnace";
-    public final static String tntMetadataKey = "mcMMO: Tracked TNT";
-    public final static String tntsafeMetadataKey = "mcMMO: Safe TNT";
-    public final static String customNameKey = "mcMMO: Custom Name";
-    public final static String customVisibleKey = "mcMMO: Name Visibility";
-    public final static String droppedItemKey = "mcMMO: Tracked Item";
-    public final static String infiniteArrowKey = "mcMMO: Infinite Arrow";
-    public final static String bowForceKey = "mcMMO: Bow Force";
-    public final static String arrowDistanceKey = "mcMMO: Arrow Distance";
-    public final static String customDamageKey = "mcMMO: Custom Damage";
-    public final static String disarmedItemKey = "mcMMO: Disarmed Item";
-    public final static String playerDataKey = "mcMMO: Player Data";
-    public final static String greenThumbDataKey = "mcMMO: Green Thumb";
+    public final static String entityMetadataKey   = "mcMMO: Spawned Entity";
+    public final static String blockMetadataKey    = "mcMMO: Piston Tracking";
+    public final static String furnaceMetadataKey  = "mcMMO: Tracked Furnace";
+    public final static String tntMetadataKey      = "mcMMO: Tracked TNT";
+    public final static String tntsafeMetadataKey  = "mcMMO: Safe TNT";
+    public final static String customNameKey       = "mcMMO: Custom Name";
+    public final static String customVisibleKey    = "mcMMO: Name Visibility";
+    public final static String droppedItemKey      = "mcMMO: Tracked Item";
+    public final static String infiniteArrowKey    = "mcMMO: Infinite Arrow";
+    public final static String bowForceKey         = "mcMMO: Bow Force";
+    public final static String arrowDistanceKey    = "mcMMO: Arrow Distance";
+    public final static String customDamageKey     = "mcMMO: Custom Damage";
+    public final static String disarmedItemKey     = "mcMMO: Disarmed Item";
+    public final static String playerDataKey       = "mcMMO: Player Data";
+    public final static String greenThumbDataKey   = "mcMMO: Green Thumb";
 
     public static FixedMetadataValue metadataValue;
 
@@ -205,14 +205,14 @@ public class mcMMO extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
-            Alchemy.finishAllBrews(); // Finish all partially complete AlchemyBrewTasks to prevent vanilla brewing continuation on restart
-            UserManager.saveAll(); // Make sure to save player information if the server shuts down
+            Alchemy.finishAllBrews();   // Finish all partially complete AlchemyBrewTasks to prevent vanilla brewing continuation on restart
+            UserManager.saveAll();      // Make sure to save player information if the server shuts down
             PartyManager.saveParties(); // Save our parties
             ScoreboardManager.teardownAll();
             formulaManager.saveFormula();
             holidayManager.saveAnniversaryFiles();
-            placeStore.saveAll(); // Save our metadata
-            placeStore.cleanUp(); // Cleanup empty metadata stores
+            placeStore.saveAll();       // Save our metadata
+            placeStore.cleanUp();       // Cleanup empty metadata stores
         }
         catch (NullPointerException e) {}
 
@@ -348,10 +348,10 @@ public class mcMMO extends JavaPlugin {
             }
         }
 
-        File oldArmorFile = new File(modDirectory + "armor.yml");
-        File oldBlocksFile = new File(modDirectory + "blocks.yml");
+        File oldArmorFile    = new File(modDirectory + "armor.yml");
+        File oldBlocksFile   = new File(modDirectory + "blocks.yml");
         File oldEntitiesFile = new File(modDirectory + "entities.yml");
-        File oldToolsFile = new File(modDirectory + "tools.yml");
+        File oldToolsFile    = new File(modDirectory + "tools.yml");
 
         if (oldArmorFile.exists()) {
             if (!oldArmorFile.renameTo(new File(modDirectory + "armor.default.yml"))) {

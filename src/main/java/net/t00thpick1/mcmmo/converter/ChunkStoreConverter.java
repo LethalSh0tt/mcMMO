@@ -36,11 +36,12 @@ public class ChunkStoreConverter {
         return StartConversion();
     }
 
-    /***
+    /**
      * Iterates through worldsToConvert.yml and looks for entries, if any exist they are converted to the new format
      * and finally worldsToConvert.yml is destroyed if no failures were detected
-     * 
+     *
      * @return Returns the number of worlds successfully converted
+     *
      * @throws IOException
      * @throws InterruptedException
      */
@@ -79,18 +80,20 @@ public class ChunkStoreConverter {
 
         bufferedReader.close();
 
-        if (failureCount == 0)
+        if (failureCount == 0) {
             toConvertFile.delete(); // Don't need worldsToConvert.yml anymore
-        else
+        }
+        else {
             System.out.println("[mcMMO] Failed to convert " + failureCount + " worlds, please edit or delete worldsToConvert.yml and try again");
+        }
 
         return conversionCount;
     }
 
-    /***
+    /**
      * Runs through each ChunkStore file in directory and copies the data into a new file,
      * the old file is then destroyed.
-     * 
+     *
      * @throws IOException
      */
     private static void processChunkStoreDirectory() throws IOException {
@@ -165,7 +168,8 @@ public class ChunkStoreConverter {
                         System.out.println("[mcMMO] " + (i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
                         break;
                     }
-                    catch (InterruptedException ex) {}
+                    catch (InterruptedException ex) {
+                    }
                 }
             }
             catch (Throwable t) {
@@ -198,6 +202,6 @@ public class ChunkStoreConverter {
             return null;
         }
 
-        return new int[] { rx, rz };
+        return new int[]{ rx, rz };
     }
 }
